@@ -56,3 +56,81 @@ INSERT INTO order_item (ord_id, pro_id, quntity) VALUES
 (14, 9, 1), -- Sana: Multiple Product Part 2 (Hammer)
 (15, 7, 1), -- Haris: Multiple Product Part 1 (Power Drill)
 (15, 10, 3); -- Haris: Multiple Product Part 2 (Measuring Tape)
+
+
+
+
+-- some analysis preform on data
+
+SELECT * FROM order_item;
+
+CREATE VIEW check_customer_buying AS
+SELECT c.cus_name, p.pro_name, p.pro_price, o.ord_date
+	FROM order_item oi
+	JOIN order_tb o ON o.ord_id = oi.ord_id
+	JOIN product_tb p ON p.pro_id = oi.pro_id
+	JOIN customer_tb c ON c.cus_id = o.cus_id;
+
+
+
+SELECT c.cus_name, COUNT(oi.quntity), SUM(p.pro_price)
+	FROM order_item oi
+	JOIN order_tb o ON o.ord_id = oi.ord_id
+	JOIN product_tb p ON p.pro_id = oi.pro_id
+	JOIN customer_tb c ON c.cus_id = o.cus_id
+	GROUP BY c.cus_id;
+
+CREATE VIEW product_billing_info AS
+SELECT
+	p.pro_name,
+	p.pro_price,
+	oi.quntity,
+	(p.pro_price * oi.quntity) AS total_price
+	FROM order_item oi
+	JOIN order_tb o ON o.ord_id = oi.ord_id
+	JOIN product_tb p ON p.pro_id = oi.pro_id
+	JOIN customer_tb c ON c.cus_id = o.cus_id;
+
+
+
+CREATE VIEW customer_order_detail AS
+SELECT
+	c.cus_name,
+	o.ord_date,
+	p.pro_name,
+	p.pro_price,
+	oi.quntity,
+	(p.pro_price * oi.quntity) AS total_price
+	FROM order_item oi
+	JOIN order_tb o ON o.ord_id = oi.ord_id
+	JOIN product_tb p ON p.pro_id = oi.pro_id
+	JOIN customer_tb c ON c.cus_id = o.cus_id;
+
+
+
+--- check these Views
+
+SELECT * FROM check_customer_buying;
+SELECT * FROM product_billing_info;
+SELECT * FROM customer_order_detail;
+
+--- Having Cluse from using this views
+
+--- whatch total sell product price
+
+SELECT pro_name, SUM(total_price) FROM customer_order_detail
+GROUP BY pro_name;
+
+--- check which item sale grater then 1000
+SELECT pro_name, SUM(total_price) FROM customer_order_detail
+GROUP BY pro_name
+HAVING  SUM(total_price) > 1000;  ---If we using GROUP BY replace WHERE to HAVING
+
+--- group by rollup if find total sell all items
+SELECT
+	COALESCE(pro_name, 'TOTAl'), --- coalesce using in last print total otherwise null show
+	SUM(total_price) FROM customer_order_detail
+GROUP BY ROLLUP(pro_name)
+ORDER BY SUM(total_price);
+
+
