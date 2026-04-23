@@ -133,4 +133,6 @@ SELECT
 GROUP BY ROLLUP(pro_name)
 ORDER BY SUM(total_price);
 
+--- soon we will create some more views and perform more analysis on data
+
 
